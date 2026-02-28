@@ -56,7 +56,7 @@ export default function LightFXBackground() {
     // Draw single angled ray from right side covering bottom
     const drawRays = () => {
       const rayStartX = canvas.width * 1.1;
-      const rayStartY = canvas.height * -0.3;
+      const rayStartY = canvas.height * -1.1;
       const rayEndX = canvas.width * -0.3;
       const rayEndY = canvas.height * 1.1;
       const rayWidth = 400;
@@ -67,9 +67,9 @@ export default function LightFXBackground() {
       // Create linear gradient for the angled ray
       const gradient = ctx.createLinearGradient(rayStartX, rayStartY, rayEndX, rayEndY);
       gradient.addColorStop(0, 'rgba(255, 207, 0, 0)');
-      gradient.addColorStop(0.3, 'rgba(255, 207, 0, 0.4)');
-      gradient.addColorStop(0.5, 'rgba(255, 207, 0, 0.5)');
-      gradient.addColorStop(0.7, 'rgba(255, 207, 0, 0.4)');
+      gradient.addColorStop(0.3, 'rgba(141, 129, 75, 0.4)');
+      gradient.addColorStop(0.5, 'rgba(227, 206, 109, 0.5)');
+      gradient.addColorStop(0.7, 'rgba(97, 83, 20, 0.4)');
       gradient.addColorStop(1, 'rgba(255, 207, 0, 0)');
 
       ctx.fillStyle = gradient;
