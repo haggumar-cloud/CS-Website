@@ -1,11 +1,12 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import {
     useScroll,
     useTransform,
     motion,
     MotionValue,
+    AnimatePresence,
 } from 'framer-motion';
 
 const IMAGES = [
@@ -16,7 +17,6 @@ const IMAGES = [
     'https://images.unsplash.com/photo-1444492417251-9c84a5fa18e0?w=600&q=80',
     'https://images.unsplash.com/photo-1470770903676-69b98201ea1c?w=600&q=80',
     'https://images.unsplash.com/photo-1523712999610-f77fbcfc3843?w=600&q=80',
-    // index 7 = HERO (center of 5×3 grid)
     'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=1200&q=90',
     'https://images.unsplash.com/photo-1551632436-cbf8dd35adfa?w=600&q=80',
     'https://images.unsplash.com/photo-1516912481808-3406841bd33c?w=600&q=80',
@@ -33,103 +33,127 @@ const COLS = 5;
 interface CellProps {
     index: number;
     scrollProgress: MotionValue<number>;
+    activeIndex: number | null;
+    gridComplete: boolean;
+    onClick: () => void;
 }
 
-function GridCell({ index, scrollProgress }: CellProps) {
+function GridCell({ index, scrollProgress, activeIndex, gridComplete, onClick }: CellProps) {
     const isHero = index === HERO_INDEX;
+    const isActive = activeIndex === index;
+    const hasActive = activeIndex !== null;
 
     const col = index % COLS;
     const row = Math.floor(index / COLS);
-    const heroCOL = HERO_INDEX % COLS; // 2
-    const heroROW = Math.floor(HERO_INDEX / COLS); // 1
+    const heroCOL = HERO_INDEX % COLS;
+    const heroROW = Math.floor(HERO_INDEX / COLS);
     const dx = col - heroCOL;
     const dy = row - heroROW;
     const dist = Math.max(Math.abs(dx), Math.abs(dy));
-
-    // Stagger: closer images appear first during scroll
     const delay = dist * 0.07;
+
     const enterStart = 0.25 + delay;
     const enterEnd = Math.min(enterStart + 0.35, 0.95);
 
-    // Hero: big and centered early, scales down to full grid at progress=0.5
     const heroScale = useTransform(scrollProgress, [0, 0.6], [3.2, 1]);
     const heroBorderRadius = useTransform(scrollProgress, [0, 0.5], [20, 8]);
 
-    // Non-hero: completely invisible until scroll starts, then fade + slide in
-    // Start at opacity 0 always, begin fading in only once scrolled
     const siblingOpacity = useTransform(scrollProgress, [enterStart, enterEnd], [0, 1]);
     const siblingY = useTransform(scrollProgress, [enterStart, enterEnd], [dy * 80 + 40, 0]);
     const siblingX = useTransform(scrollProgress, [enterStart, enterEnd], [dx * 25, 0]);
     const siblingScale = useTransform(scrollProgress, [enterStart, enterEnd], [0.82, 1]);
 
+    const dimFilter = hasActive && !isActive
+        ? 'grayscale(100%) brightness(0.5)'
+        : 'none';
+    const dimOpacity = hasActive && !isActive ? 0.6 : 1;
+
     if (isHero) {
         return (
             <motion.div
-                className="relative overflow-hidden"
+                layoutId={`img-${index}`}
+                className="relative overflow-hidden cursor-pointer"
+                onClick={gridComplete ? onClick : undefined}
                 style={{
                     scale: heroScale,
                     borderRadius: heroBorderRadius,
-                    aspectRatio: '3/4',
-                    zIndex: 10,
+                    aspectRatio: '1/1',
+                    zIndex: isActive ? 50 : 10,
                     willChange: 'transform',
                     backfaceVisibility: 'hidden',
-                    WebkitBackfaceVisibility: 'hidden',
                 }}
+                animate={{
+                    filter: dimFilter,
+                    opacity: dimOpacity,
+                }}
+                transition={{ duration: 0.4, ease: 'easeInOut' }}
             >
-                <img src={IMAGES[index]} alt="" className="w-full h-full object-cover" loading="eager" style={{ filter: 'none', transform: 'translateZ(0)' }} />
+                <img
+                    src={IMAGES[index]}
+                    alt=""
+                    className="w-full h-full object-cover"
+                    loading="eager"
+                    style={{ filter: 'none', transform: 'translateZ(0)', display: 'block' }}
+                />
             </motion.div>
         );
     }
 
     return (
-        // Key: initial style ensures they're invisible before Framer Motion takes over
         <motion.div
-            className="relative overflow-hidden"
+            layoutId={`img-${index}`}
+            className="relative overflow-hidden cursor-pointer"
             initial={{ opacity: 0 }}
+            onClick={gridComplete ? onClick : undefined}
             style={{
                 opacity: siblingOpacity,
                 y: siblingY,
                 x: siblingX,
                 scale: siblingScale,
                 borderRadius: 8,
-                aspectRatio: '3/4',
+                aspectRatio: '1/1',
                 willChange: 'transform, opacity',
                 backfaceVisibility: 'hidden',
-                WebkitBackfaceVisibility: 'hidden',
+                zIndex: isActive ? 50 : 1,
             }}
+            animate={{
+                filter: dimFilter,
+                opacity: hasActive && !isActive ? 0.6 : undefined,
+            }}
+            transition={{ duration: 0.4, ease: 'easeInOut' }}
         >
-            <img src={IMAGES[index]} alt="" className="w-full h-full object-cover" loading="lazy" style={{ filter: 'none', transform: 'translateZ(0)' }} />
-        </motion.div>
-    );
-}
-
-function ScrollHint({ scrollProgress }: { scrollProgress: MotionValue<number> }) {
-    const opacity = useTransform(scrollProgress, [0, 0.2], [1, 0]);
-    return (
-        <motion.div
-            className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none z-20"
-            style={{ opacity }}
-        >
-            <p className="text-[10px] uppercase tracking-[0.3em] text-white/40">scroll to reveal</p>
-            <motion.div
-                animate={{ y: [0, 6, 0] }}
-                transition={{ repeat: Infinity, duration: 1.6, ease: 'easeInOut' }}
-            >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-white/30">
-                    <path d="M12 5v14M5 12l7 7 7-7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-            </motion.div>
+            <img
+                src={IMAGES[index]}
+                alt=""
+                className="w-full h-full object-cover"
+                loading="lazy"
+                style={{ filter: 'none', transform: 'translateZ(0)', display: 'block' }}
+            />
         </motion.div>
     );
 }
 
 export default function ScrollGrid() {
     const containerRef = useRef<HTMLDivElement>(null);
+    const [activeIndex, setActiveIndex] = useState<number | null>(null);
+    const [gridComplete, setGridComplete] = useState(false);
 
     const { scrollYProgress } = useScroll({
         target: containerRef,
         offset: ['start start', 'end end'],
     });
+
+    scrollYProgress.on('change', (v) => {
+        if (v > 0.88 && !gridComplete) setGridComplete(true);
+        if (v < 0.6 && gridComplete) {
+            setGridComplete(false);
+            setActiveIndex(null);
+        }
+    });
+
+    const handleClick = (index: number) => {
+        setActiveIndex((prev) => (prev === index ? null : index));
+    };
 
     return (
         <div ref={containerRef} style={{ height: '350vh', position: 'relative' }}>
@@ -145,6 +169,42 @@ export default function ScrollGrid() {
                     justifyContent: 'center',
                 }}
             >
+                <AnimatePresence>
+                    {activeIndex !== null && (
+                        <motion.div
+                            key="backdrop"
+                            className="absolute inset-0 z-30"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.35 }}
+                            style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(2px)' }}
+                            onClick={() => setActiveIndex(null)}
+                        />
+                    )}
+                </AnimatePresence>
+
+                <AnimatePresence>
+                    {activeIndex !== null && (
+                        <motion.div
+                            key={`zoomed-${activeIndex}`}
+                            layoutId={`img-${activeIndex}`}
+                            className="absolute z-40 overflow-hidden cursor-pointer"
+                            style={{ borderRadius: 16, width: 'min(80vw, 560px)', aspectRatio: '1/1' }}
+                            initial={false}
+                            transition={{ type: 'spring', stiffness: 260, damping: 28 }}
+                            onClick={() => setActiveIndex(null)}
+                        >
+                            <img
+                                src={IMAGES[activeIndex]}
+                                alt=""
+                                className="w-full h-full object-cover"
+                                style={{ display: 'block' }}
+                            />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
                 <div
                     style={{
                         perspective: '1200px',
@@ -156,7 +216,6 @@ export default function ScrollGrid() {
                         justifyContent: 'center',
                     }}
                 >
-                    {/* 5×3 grid with larger gaps */}
                     <div
                         style={{
                             display: 'grid',
@@ -169,12 +228,17 @@ export default function ScrollGrid() {
                         }}
                     >
                         {Array.from({ length: 15 }).map((_, i) => (
-                            <GridCell key={i} index={i} scrollProgress={scrollYProgress} />
+                            <GridCell
+                                key={i}
+                                index={i}
+                                scrollProgress={scrollYProgress}
+                                activeIndex={activeIndex}
+                                gridComplete={gridComplete}
+                                onClick={() => handleClick(i)}
+                            />
                         ))}
                     </div>
                 </div>
-
-                <ScrollHint scrollProgress={scrollYProgress} />
             </div>
         </div>
     );
