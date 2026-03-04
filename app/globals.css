@@ -118,21 +118,53 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply text-foreground bg-transparent;
   }
 }
 
 
-* {
-    margin: 0;
-padding: 0;
-box-sizing: border-box;
-}
-body {
-background: black;
-font-family: Arial, sans-serif;
-min-height: 200vh;
-padding-top: 20px; 
+html {
+  scroll-behavior: smooth;
 }
 
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: black;
+  font-family: Arial, sans-serif;
+  min-height: 200vh;
+  padding-top: 20px;
+}
+
+/* ── Performance hints ── */
+
+/* Promote known heavy animation containers to their own GPU layer */
+[style*="position: sticky"],
+[style*="will-change"] {
+  transform: translateZ(0);
+  isolation: isolate;
+}
+
+/* Improve image rendering across the site */
+img {
+  image-rendering: -webkit-optimize-contrast;
+}
+
+/* Honour the user's motion preference — cut all transitions/animations */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

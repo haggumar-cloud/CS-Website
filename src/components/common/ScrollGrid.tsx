@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect, memo } from 'react';
 import {
     useScroll,
     useTransform,
@@ -38,7 +38,14 @@ interface CellProps {
     onClick: () => void;
 }
 
-function GridCell({ index, scrollProgress, activeIndex, gridComplete, onClick }: CellProps) {
+// Memoised — only re-renders when its own props change, not on every scroll tick
+const GridCell = memo(function GridCell({
+    index,
+    scrollProgress,
+    activeIndex,
+    gridComplete,
+    onClick,
+}: CellProps) {
     const isHero = index === HERO_INDEX;
     const isActive = activeIndex === index;
     const hasActive = activeIndex !== null;
@@ -63,9 +70,7 @@ function GridCell({ index, scrollProgress, activeIndex, gridComplete, onClick }:
     const siblingX = useTransform(scrollProgress, [enterStart, enterEnd], [dx * 25, 0]);
     const siblingScale = useTransform(scrollProgress, [enterStart, enterEnd], [0.82, 1]);
 
-    const dimFilter = hasActive && !isActive
-        ? 'grayscale(100%) brightness(0.5)'
-        : 'none';
+    const dimFilter = hasActive && !isActive ? 'grayscale(100%) brightness(0.5)' : 'none';
     const dimOpacity = hasActive && !isActive ? 0.6 : 1;
 
     if (isHero) {
@@ -80,12 +85,8 @@ function GridCell({ index, scrollProgress, activeIndex, gridComplete, onClick }:
                     aspectRatio: '1/1',
                     zIndex: isActive ? 50 : 10,
                     willChange: 'transform',
-                    backfaceVisibility: 'hidden',
                 }}
-                animate={{
-                    filter: dimFilter,
-                    opacity: dimOpacity,
-                }}
+                animate={{ filter: dimFilter, opacity: dimOpacity }}
                 transition={{ duration: 0.4, ease: 'easeInOut' }}
             >
                 <img
@@ -93,7 +94,8 @@ function GridCell({ index, scrollProgress, activeIndex, gridComplete, onClick }:
                     alt=""
                     className="w-full h-full object-cover"
                     loading="eager"
-                    style={{ filter: 'none', transform: 'translateZ(0)', display: 'block' }}
+                    decoding="async"
+                    style={{ transform: 'translateZ(0)', display: 'block' }}
                 />
             </motion.div>
         );
@@ -113,7 +115,6 @@ function GridCell({ index, scrollProgress, activeIndex, gridComplete, onClick }:
                 borderRadius: 8,
                 aspectRatio: '1/1',
                 willChange: 'transform, opacity',
-                backfaceVisibility: 'hidden',
                 zIndex: isActive ? 50 : 1,
             }}
             animate={{
@@ -127,11 +128,12 @@ function GridCell({ index, scrollProgress, activeIndex, gridComplete, onClick }:
                 alt=""
                 className="w-full h-full object-cover"
                 loading="lazy"
-                style={{ filter: 'none', transform: 'translateZ(0)', display: 'block' }}
+                decoding="async"
+                style={{ transform: 'translateZ(0)', display: 'block' }}
             />
         </motion.div>
     );
-}
+});
 
 export default function ScrollGrid() {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -143,13 +145,17 @@ export default function ScrollGrid() {
         offset: ['start start', 'end end'],
     });
 
-    scrollYProgress.on('change', (v) => {
-        if (v > 0.88 && !gridComplete) setGridComplete(true);
-        if (v < 0.6 && gridComplete) {
-            setGridComplete(false);
-            setActiveIndex(null);
-        }
-    });
+    // Subscribe once, re-subscribe only when gridComplete changes — properly cleaned up
+    useEffect(() => {
+        const unsub = scrollYProgress.on('change', (v) => {
+            if (v > 0.88 && !gridComplete) setGridComplete(true);
+            if (v < 0.6 && gridComplete) {
+                setGridComplete(false);
+                setActiveIndex(null);
+            }
+        });
+        return unsub;
+    }, [scrollYProgress, gridComplete]);
 
     const handleClick = (index: number) => {
         setActiveIndex((prev) => (prev === index ? null : index));
@@ -207,8 +213,6 @@ export default function ScrollGrid() {
 
                 <div
                     style={{
-                        perspective: '1200px',
-                        perspectiveOrigin: '50% 50%',
                         width: '100%',
                         height: '100%',
                         display: 'flex',
@@ -224,7 +228,6 @@ export default function ScrollGrid() {
                             gap: 'clamp(8px, 1.5vw, 16px)',
                             width: 'min(96vw, 960px)',
                             height: 'min(84vh, 680px)',
-                            transformStyle: 'preserve-3d',
                         }}
                     >
                         {Array.from({ length: 15 }).map((_, i) => (

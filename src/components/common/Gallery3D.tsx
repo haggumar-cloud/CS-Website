@@ -18,9 +18,9 @@ interface CardState {
 }
 
 export interface Gallery3DProps {
-  
+
   title?: string;
- 
+
   images?: [string, string, string, string, string];
   cardWidth?: number;
   cardAspect?: number;
@@ -52,9 +52,9 @@ export default function Gallery3D({
   overflowFraction = 0.6,
   className,
 }: Gallery3DProps) {
-  const sceneRef  = useRef<HTMLDivElement>(null);
+  const sceneRef = useRef<HTMLDivElement>(null);
   const cursorRef = useRef<HTMLDivElement>(null);
-  const rafRef    = useRef<number>(0);
+  const rafRef = useRef<number>(0);
 
   const buildSlots = useCallback(
     (cw: number, ch: number, bw: number, bh: number): SlotConfig[] => {
@@ -65,15 +65,15 @@ export default function Gallery3D({
 
       return [
         // top-left
-        { destX: -ox,      destY: -oy,      img: images[0], t0: 0.00, spd: 0.00018 },
+        { destX: -ox, destY: -oy, img: images[0], t0: 0.00, spd: 0.00018 },
         // top-right
-        { destX: cw + ox,  destY: -oy,      img: images[1], t0: 0.35, spd: 0.00022 },
+        { destX: cw + ox, destY: -oy, img: images[1], t0: 0.35, spd: 0.00022 },
         // center (flies straight at viewer)
-        { destX: cx,       destY: cy,       img: images[2], t0: 0.65, spd: 0.00016 },
+        { destX: cx, destY: cy, img: images[2], t0: 0.65, spd: 0.00016 },
         // bottom-left
-        { destX: -ox,      destY: ch + oy,  img: images[3], t0: 0.20, spd: 0.00020 },
+        { destX: -ox, destY: ch + oy, img: images[3], t0: 0.20, spd: 0.00020 },
         // bottom-right
-        { destX: cw + ox,  destY: ch + oy,  img: images[4], t0: 0.50, spd: 0.00019 },
+        { destX: cw + ox, destY: ch + oy, img: images[4], t0: 0.50, spd: 0.00019 },
       ];
     },
     [images, overflowFraction],
@@ -95,17 +95,20 @@ export default function Gallery3D({
     const cardStates: CardState[] = slots.map(slot => {
       const el = document.createElement('div');
       el.className = styles.card;
-      el.style.width  = `${bw}px`;
+      el.style.width = `${bw}px`;
       el.style.height = `${bh}px`;
+      el.style.willChange = 'transform, opacity';
+      el.style.contain = 'layout style paint';
 
       const inner = document.createElement('div');
       inner.className = styles.cardInner;
 
       const img = document.createElement('img');
-      img.src       = slot.img;
+      img.src = slot.img;
       img.draggable = false;
-      img.loading   = 'eager';
-      img.alt       = '';
+      img.loading = 'eager';
+      img.decoding = 'async';
+      img.alt = '';
 
       inner.appendChild(img);
       el.appendChild(inner);
@@ -134,15 +137,15 @@ export default function Gallery3D({
 
         // Opacity: fade in quickly, hold, fade out near exit
         let opacity: number;
-        if (c.t < 0.06)      opacity = c.t / 0.06;
+        if (c.t < 0.06) opacity = c.t / 0.06;
         else if (c.t > 0.82) opacity = 1 - (c.t - 0.82) / 0.18;
-        else                  opacity = 1;
+        else opacity = 1;
 
         const left = px - bw / 2;
-        const top  = py - bh / 2;
+        const top = py - bh / 2;
 
         c.el.style.transform = `translate(${left}px, ${top}px) scale(${scale})`;
-        c.el.style.opacity   = String(Math.max(0, opacity));
+        c.el.style.opacity = String(Math.max(0, opacity));
       }
 
       rafRef.current = requestAnimationFrame(tick);
@@ -155,7 +158,7 @@ export default function Gallery3D({
       if (!cur) return;
       const rect = scene.getBoundingClientRect();
       cur.style.left = `${e.clientX - rect.left}px`;
-      cur.style.top  = `${e.clientY - rect.top}px`;
+      cur.style.top = `${e.clientY - rect.top}px`;
     }
 
     scene.addEventListener('mousemove', onMouseMove);

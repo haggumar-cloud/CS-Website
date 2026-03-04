@@ -1,18 +1,20 @@
-import { Skiper19 } from "@/src/components/ui/stroke"
-import ImageHover from "@/src/components/common/ImageHover";
-import CardStack from "@/src/components/common/CardStack";
-import Gallery3D from "@/src/components/common/Gallery3D";
-import HorizontalGallery from "@/src/components/gallery/HorizontalGallery";
+"use client";
+
+import dynamic from 'next/dynamic';
+import { Skiper19 } from "@/src/components/ui/stroke";
 import TargetCursor from "@/src/components/common/TargetCursor";
-import TeamCard from "@/src/components/common/TeamCard";
-import ScrollGrid from "@/src/components/common/ScrollGrid";
 
-
+// Heavy components loaded only when needed — keeps initial JS bundle small
+const ImageHover = dynamic(() => import('@/src/components/common/ImageHover'), { ssr: false });
+const ScrollGrid = dynamic(() => import('@/src/components/common/ScrollGrid'), { ssr: false });
+const TeamCard = dynamic(() => import('@/src/components/common/TeamCard'), { ssr: false });
+const HorizontalGallery = dynamic(() => import('@/src/components/gallery/HorizontalGallery'), { ssr: false });
+const CardStack = dynamic(() => import('@/src/components/common/CardStack'), { ssr: false });
+const Gallery3D = dynamic(() => import('@/src/components/common/Gallery3D'), { ssr: false });
 
 export default function Home() {
   return (
     <>
-
       <TargetCursor
         spinDuration={2}
         hideDefaultCursor
@@ -40,8 +42,6 @@ export default function Home() {
         <HorizontalGallery />
       </div>
 
-
-
       <div>
         <CardStack />
       </div>
@@ -49,7 +49,6 @@ export default function Home() {
       <section style={{ width: '100%', height: '600px' }}>
         <Gallery3D title="IEEE CS" />
       </section>
-
     </>
   );
 }
