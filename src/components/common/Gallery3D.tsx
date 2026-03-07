@@ -84,11 +84,14 @@ export default function Gallery3D({
     if (!scene) return;
 
     const { width: cw, height: ch } = scene.getBoundingClientRect();
-    const cx = cw / 2;
-    const cy = ch / 2;
+    let cx = cw / 2;
+    let cy = ch / 2;
 
-    const bw = cardWidth ?? Math.round(Math.min(cw * 0.32, 380));
-    const bh = Math.round(bw * cardAspect);
+    let bw = cardWidth ?? Math.round(Math.min(cw * 0.32, 380));
+    // Fallback for very small mobile screens
+    if (cw < 640) bw = Math.round(Math.min(cw * 0.55, 200));
+    
+    let bh = Math.round(bw * cardAspect);
 
     const slots = buildSlots(cw, ch, bw, bh);
 
@@ -162,9 +165,37 @@ export default function Gallery3D({
 
     scene.addEventListener('mousemove', onMouseMove);
 
+    // Responsive window resizing logic
+    const resizeObserver = new ResizeObserver(() => {
+      if (!scene) return;
+      
+      const { width: newCw, height: newCh } = scene.getBoundingClientRect();
+      cx = newCw / 2;
+      cy = newCh / 2;
+      
+      // Update sizes based on the new dimensions
+      bw = cardWidth ?? Math.round(Math.min(newCw * 0.32, 380));
+      // Fallback for very small mobile screens
+      if (newCw < 640) bw = Math.round(Math.min(newCw * 0.55, 200));
+      
+      bh = Math.round(bw * cardAspect);
+
+      const updatedSlots = buildSlots(newCw, newCh, bw, bh);
+
+      // Reapply structural sizes to cards seamlessly
+      cardStates.forEach((c, index) => {
+        c.slot = updatedSlots[index];
+        c.el.style.width = `${bw}px`;
+        c.el.style.height = `${bh}px`;
+      });
+    });
+    
+    resizeObserver.observe(scene);
+
     return () => {
       cancelAnimationFrame(rafRef.current);
       scene.removeEventListener('mousemove', onMouseMove);
+      resizeObserver.disconnect();
       for (const c of cardStates) c.el.remove();
     };
   }, [buildSlots, cardAspect, cardWidth]);

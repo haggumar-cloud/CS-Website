@@ -61,8 +61,12 @@ export default function TopographicBackground({
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
 
-      const cols = 120;
-      const rows = 80;
+      // Create a responsive grid so the topographic lines are never stretched
+      const maxDim = Math.max(w, h);
+      const cellSize = Math.max(20, maxDim / 100); 
+      
+      const cols = Math.ceil(w / cellSize);
+      const rows = Math.ceil(h / cellSize);
       const cellW = w / cols;
       const cellH = h / rows;
 
@@ -70,8 +74,10 @@ export default function TopographicBackground({
       for (let j = 0; j <= rows; j++) {
         field[j] = [];
         for (let i = 0; i <= cols; i++) {
-          const nx = (i / cols) * 6;
-          const ny = (j / rows) * 4;
+          // Base the noise coordinates on the physical screen size 
+          // so the noise scale remains constantly proportioned
+          const nx = (i * cellW) / 250;
+          const ny = (j * cellH) / 250;
           field[j][i] = noise(nx, ny, t);
         }
       }

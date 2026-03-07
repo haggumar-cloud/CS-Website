@@ -144,8 +144,8 @@
     }
 }
 
-/* ── Mobile (≤ 640px) ── */
-@media (max-width: 640px) {
+/* ── Mobile (≤ 900px) ── */
+@media (max-width: 900px) {
     .hamburger {
         display: block;
     }
@@ -156,42 +156,141 @@
     }
 
     .nav-menu {
-        position: absolute;
-        top: calc(100% + 8px);
+        display: none;
+    }
+
+    .mobile-overlay {
+        position: fixed;
+        top: 0;
         left: 0;
-        width: 100%;
+        width: 100vw;
+        height: 100vh;
+        z-index: 2000;
+        background: #000;
+        display: flex;
         flex-direction: column;
         align-items: center;
-        background: rgba(10, 10, 20, 0.97);
-        backdrop-filter: blur(20px);
-        max-height: 0;
+        justify-content: center;
         overflow: hidden;
-        transition: max-height 0.4s ease, padding 0.4s ease;
-        border-radius: 0 0 14px 14px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-top: none;
-        padding: 0;
-        gap: 0;
     }
 
-    .nav-menu.open {
-        max-height: 340px;
-        padding: 8px 0;
+    .mobile-bg {
+        position: absolute;
+        inset: 0;
+        z-index: -1;
     }
 
-    .nav-menu li {
-        width: 100%;
-        text-align: center;
-        padding: 16px 0;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-        font-size: 13px;
+    .close-btn {
+        position: absolute;
+        top: 24px;
+        right: 24px;
+        width: 48px;
+        height: 38px;
+        background: #f5f5dc;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        cursor: pointer;
+        z-index: 10;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        transition: transform 0.2s ease;
     }
 
-    .nav-menu li:last-child {
-        border-bottom: none;
+    .close-btn:active {
+        transform: scale(0.95);
     }
 
-    .nav-menu li.active::after {
-        bottom: -8px;
+    .mobile-links {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        z-index: 10;
+        margin-top: -20px;
+    }
+
+    .mobile-link {
+        font-family: 'Barlow Condensed', 'Impact', sans-serif;
+        font-size: 56px;
+        font-weight: 800;
+        color: #fff;
+        text-decoration: none;
+        letter-spacing: -1px;
+        line-height: 0.9;
+        transition: color 0.3s ease;
+        text-transform: uppercase;
+    }
+
+    .mobile-active {
+        color: #fbbf24;
+    }
+
+    /* Norris Text Animation */
+    .norrisWrapper {
+        overflow: hidden;
+        display: inline-flex;
+    }
+
+    .norrisChar {
+        position: relative;
+        color: transparent;
+        display: inline-block;
+    }
+
+    .norrisChar::before,
+    .norrisChar::after {
+        content: attr(data-char);
+        position: absolute;
+        left: 0;
+        color: #fff;
+        transition: all ease-out 400ms;
+        transition-delay: calc(var(--char-index) * 35ms);
+    }
+
+    .norrisWrapper.animate .norrisChar::before,
+    .norrisWrapper.animate .norrisChar::after {
+        transition-delay: calc((var(--char-index) + var(--line-index) * 2) * 35ms);
+    }
+
+    .norrisChar::before {
+        transform: translateY(0);
+    }
+
+    .norrisChar::after {
+        transform: translateY(100%);
+    }
+
+    .mobile-link:hover .norrisChar::before,
+    .mobile-link:active .norrisChar::before,
+    .norrisWrapper.animate .norrisChar::before {
+        transform: translateY(-100%);
+        color: #fbbf24;
+    }
+
+    .mobile-link:hover .norrisChar::after,
+    .mobile-link:active .norrisChar::after,
+    .norrisWrapper.animate .norrisChar::after {
+        transform: translateY(0);
+        color: #fbbf24;
+    }
+
+    .mobile-footer {
+        position: absolute;
+        bottom: 40px;
+        font-family: "Geist", "Inter", sans-serif;
+        font-size: 32px;
+        font-weight: 600;
+        color: #fff;
+        letter-spacing: -1px;
+        z-index: 10;
+    }
+}
+
+/* For desktop ensure hide overlay */
+@media (min-width: 901px) {
+    .mobile-overlay {
+        display: none;
     }
 }
