@@ -59,7 +59,7 @@ function buildRightClip(): string {
 
 // Newspaper collage images — dark, B&W grid of event photos
 const COLLAGE_PHOTOS = [
-  'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&q=80',
+'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&q=80',
   'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=1200&q=80',
   'https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=1200&q=80',
   'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=1200&q=80',
@@ -72,6 +72,7 @@ const HEADLINES = [
   "",
   ""
 ]
+
 
 const EC_MEMBERS = [
   { name:'Arya Sharma',  role:'President',      photo:'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=500&fit=crop&q=80' },
@@ -415,12 +416,6 @@ function CollageGrid({ side }: { side: 'left' | 'right' }) {
               {HEADLINES[i]}
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-              {[88, 80, 90, 72, 65].map((w, j) => (
-                <div
-                  key={j}
-                  style={{ height: '1.5px', width: `${w}%`, background: 'rgba(255,255,255,0.18)', borderRadius: '1px' }}
-                />
-              ))}
             </div>
           </div>
         </div>
