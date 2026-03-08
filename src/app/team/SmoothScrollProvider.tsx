@@ -41,13 +41,13 @@ export default function SmoothScrollProvider({ children }: { children: React.Rea
       gsap.ticker.remove(tickerFn)
       lenis.destroy()
       lenisRef.current = null
-      
+
       // Force remove any overflow locks manually that GSAP or Lenis might have left behind
       document.body.style.removeProperty('overflow')
       document.documentElement.style.removeProperty('overflow')
       document.body.style.removeProperty('height')
       document.documentElement.style.removeProperty('height')
-      
+
       // Kill all active scroll triggers to prevent them from interfering globally
       ScrollTrigger.getAll().forEach((t) => t.kill())
     }

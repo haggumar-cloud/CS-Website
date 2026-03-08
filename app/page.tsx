@@ -3,7 +3,6 @@
 import dynamic from 'next/dynamic';
 import { Skiper19 } from "@/src/components/ui/stroke";
 import TargetCursor from "@/src/components/common/TargetCursor";
-const ScrollGrid = dynamic(() => import('@/src/components/common/ScrollGrid'), { ssr: false });
 const TeamCard = dynamic(() => import('@/src/components/common/TeamCard'), { ssr: false });
 const HorizontalGallery = dynamic(() => import('@/src/app/gallery/HorizontalGallery'), { ssr: false });
 const CardStack = dynamic(() => import('@/src/components/common/CardStack'), { ssr: false });
@@ -32,7 +31,7 @@ export default function Home() {
       <div>
        
 
-        <ScrollGrid />
+        
 
         {/* <TeamCard
           image="https://images.pexels.com/photos/34408249/pexels-photo-34408249.jpeg"
