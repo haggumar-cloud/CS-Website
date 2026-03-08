@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import DecryptedText from "@/components/DecryptedText";
-import TopographicBackground from "@/components/LandoBackground";
+import TopographicBackground from "@/components/LineBackground";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import style from "./Navbar.module.css";
