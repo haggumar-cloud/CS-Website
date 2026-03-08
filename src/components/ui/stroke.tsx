@@ -152,4 +152,3 @@ const LinePath = ({
     </svg>
   );
 };
-
